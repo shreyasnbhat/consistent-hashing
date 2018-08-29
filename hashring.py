@@ -16,17 +16,23 @@ class HashCircle:
     item_position = None
     key_node_map = None
     node_key_count = None
+    node_key_count_grouped = None
+    node_weight = 1
+    node_prefix_length = 1
 
-    def __init__(self, keys, nodes):
+    def __init__(self, keys, nodes, node_prefix_length, node_weight):
         self.item_position = defaultdict(int)
         self.key_node_map = defaultdict(str)
         self.node_key_count = defaultdict(int)
+        self.node_key_count_grouped = defaultdict(int)
+        self.node_prefix_length = node_prefix_length
         self.init_nodes(nodes)
         self.init_keys(keys)
+        self.node_weight = node_weight
 
     def init_nodes(self, nodes):
         for i in nodes:
-            self.add_node(i)
+            self.add_weighted_node(i)
 
     def init_keys(self, keys):
         for i in keys:
@@ -35,19 +41,49 @@ class HashCircle:
             insort(self.key_list, key_hash)
             insort(self.item_list, key_hash)
 
-    def add_node(self, node):
+    def add_weighted_node(self, node, weight, regenerate=False):
+        w_nodes = [node + '-' + str(i) for i in range(weight)]
+        for i in range(weight):
+            self.add_node(w_nodes[i], regenerate)
+
+        if regenerate:
+            self.generate_map()
+
+    def add_node(self, node, regenerated):
         if node not in self.nodes:
             self.nodes.append(node)
             node_hash = int(hashlib.md5(node.encode('utf-8')).hexdigest(), 16)
             self.item_position[node_hash] = node
             insort(self.node_list, node_hash)
             insort(self.item_list, node_hash)
+
+            if not regenerated:
+                self.generate_map()
+
+    def remove_weighted_node(self,node, weight,regenerate=False):
+        w_nodes = [node + '-' + str(i) for i in range(weight)]
+        for i in range(weight):
+            self.remove_node(w_nodes[i], regenerate)
+
+        if regenerate:
             self.generate_map()
+
+    def remove_node(self, node, regenerated):
+        if node in self.nodes:
+            self.nodes.remove(node)
+            node_hash = int(hashlib.md5(node.encode('utf-8')).hexdigest(), 16)
+            self.node_list.remove(node_hash)
+            self.item_list.remove(node_hash)
+            del self.item_position[node_hash]
+
+            if not regenerated:
+                self.generate_map()
 
     def generate_map(self):
 
         self.key_node_map.clear()
         self.node_key_count.clear()
+        self.node_key_count_grouped.clear()
 
         # Need to assign every key the next greater node hash as the cache server for the key
         node_index = 0
@@ -58,19 +94,34 @@ class HashCircle:
             if i <= node_hash:
                 self.key_node_map[self.item_position[i]] = self.item_position[node_hash]
                 self.node_key_count[self.item_position[node_hash]] += 1
+                self.node_key_count_grouped[self.get_node_group(node_hash)] += 1
             else:
                 if node_index == len(self.node_list) - 1:
                     self.key_node_map[self.item_position[i]] = self.item_position[self.node_list[0]]
                     self.node_key_count[self.item_position[self.node_list[0]]] += 1
+                    self.node_key_count_grouped[self.get_node_group(self.node_list[0])] += 1
                 else:
                     while node_hash < i:
-                        node_index += 1
-                        node_hash = self.node_list[node_index]
+                        if node_index < len(self.node_list) - 1:
+                            node_index += 1
+                            node_hash = self.node_list[node_index]
+                        else:
+                            node_index = 0
+                            node_hash = self.node_list[node_index]
+                            break
 
                     self.key_node_map[self.item_position[i]] = self.item_position[node_hash]
                     self.node_key_count[self.item_position[node_hash]] += 1
 
-        self.print_status()
+                    self.node_key_count_grouped[self.get_node_group(node_hash)] += 1
+
+        print(self.node_key_count_grouped)
+        # self.print_status()
+
+    def get_node_group(self, node_hash):
+        node_group_split = self.item_position[node_hash].split('-')
+        node_group = node_group_split[0] + '-' + node_group_split[1]
+        return node_group
 
     def print_status(self, verbose=False):
 
@@ -150,9 +201,10 @@ class HashCircle:
         x_count = []
         y_count = []
         temp_sort = []
-        for i in self.node_key_count.keys():
-            temp_sort.append((i, self.node_key_count[i]))
-        temp_sort.sort(key=lambda x: int(x[0][1:]))
+
+        for i in self.node_key_count_grouped.keys():
+            temp_sort.append((i, self.node_key_count_grouped[i]))
+        temp_sort.sort(key=lambda x: int(x[0].split('-')[1]))
 
         for i in temp_sort:
             x_count.append(i[0])
@@ -178,8 +230,11 @@ class HashCircle:
             y = y_node[i]
             label = hover_labels[i]
 
-            ax,ay = get_annotation_position(self.node_list[i],radius,direction)
+            ax, ay = get_annotation_position(self.node_list[i], radius, direction)
             direction = not direction
+
+            annotation_text_split = label.split('-')
+            annotation_text = annotation_text_split[0] + '-' + annotation_text_split[1]
 
             node_annotation = dict(
                 x=x,
@@ -188,7 +243,7 @@ class HashCircle:
                 yref='y',
                 axref='x',
                 ayref='y',
-                text=label,
+                text=annotation_text,
                 showarrow=True,
                 arrowhead=7,
                 ax=ax,
@@ -206,10 +261,11 @@ class HashCircle:
             )
             annotations.append(node_annotation)
 
-
         layout = go.Layout(
             title='Consistent Hashing Plots',
-            font=dict(family='Courier New, monospace', size=18, color='#7f7f7f'),
+            paper_bgcolor='#263238',
+            plot_bgcolor='#37474F',
+            font=dict(family='Courier New, monospace', size=18, color='#ffffff'),
             xaxis=dict(
                 domain=[0, 0.45],
                 range=[-(radius + 1), (radius + 1)],
@@ -219,14 +275,16 @@ class HashCircle:
                 range=[-(radius + 1), (radius + 1)]
             ),
             xaxis2=dict(
+                title="Node names",
                 domain=[0.55, 1],
             ),
             yaxis2=dict(
+                title="Node Key counts",
                 domain=[0, 1],
                 anchor='x2'
             ),
             legend=dict(
-                x=0,
+                x=1.0,
                 y=1.0,
                 bgcolor='rgba(255, 255, 255, 0)',
                 bordercolor='rgba(255, 255, 255, 0)'
@@ -245,7 +303,7 @@ class HashCircle:
                 line=dict(
                     color='rgba(50, 171, 96, 1)')
             )],
-            bargap=0.15
+            bargap=0.15,
         )
 
         fig = {
