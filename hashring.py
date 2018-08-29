@@ -46,9 +46,11 @@ class HashCircle:
 
     def generate_map(self):
 
+        self.key_node_map.clear()
+        self.node_key_count.clear()
+
         # Need to assign every key the next greater node hash as the cache server for the key
         node_index = 0
-        remappings = 0
         for i in self.key_list:
 
             node_hash = self.node_list[node_index]
@@ -91,7 +93,7 @@ class HashCircle:
         for i in self.node_key_count.keys():
             print(i, self.node_key_count[i])
 
-    def plot_all(self,radius):
+    def plot_all(self, radius):
 
         x_key = []
         y_key = []
@@ -101,12 +103,12 @@ class HashCircle:
         hover_labels = []
 
         for i in self.key_list:
-            a, b = hash_to_coordinates(i,0,0,radius)
+            a, b = hash_to_coordinates(i, 0, 0, radius)
             x_key.append(a)
             y_key.append(b)
 
         for i in self.node_list:
-            a, b = hash_to_coordinates(i,0,0,radius)
+            a, b = hash_to_coordinates(i, 0, 0, radius)
             x_node.append(a)
             y_node.append(b)
             hover_labels.append(self.item_position[i])
@@ -147,9 +149,14 @@ class HashCircle:
 
         x_count = []
         y_count = []
+        temp_sort = []
         for i in self.node_key_count.keys():
-            x_count.append(i)
-            y_count.append(self.node_key_count[i])
+            temp_sort.append((i, self.node_key_count[i]))
+        temp_sort.sort(key=lambda x: int(x[0][1:]))
+
+        for i in temp_sort:
+            x_count.append(i[0])
+            y_count.append(i[1])
 
         trace3 = go.Bar(
             name='Key Distribution',
@@ -164,23 +171,59 @@ class HashCircle:
 
         data = [trace1, trace2, trace3]
 
+        annotations = []
+        direction = True
+        for i in range(len(self.node_list)):
+            x = x_node[i]
+            y = y_node[i]
+            label = hover_labels[i]
+
+            ax,ay = get_annotation_position(self.node_list[i],radius,direction)
+            direction = not direction
+
+            node_annotation = dict(
+                x=x,
+                y=y,
+                xref='x',
+                yref='y',
+                axref='x',
+                ayref='y',
+                text=label,
+                showarrow=True,
+                arrowhead=7,
+                ax=ax,
+                ay=ay,
+                font=dict(
+                    family='Courier New, monospace',
+                    size=16,
+                    color='#ffffff'
+                ),
+                bordercolor='#FF6F00',
+                borderwidth=2,
+                borderpad=4,
+                bgcolor='#FFA000',
+                opacity=0.8
+            )
+            annotations.append(node_annotation)
+
+
         layout = go.Layout(
             title='Consistent Hashing Plots',
             font=dict(family='Courier New, monospace', size=18, color='#7f7f7f'),
             xaxis=dict(
                 domain=[0, 0.45],
-                range=[-(radius+1), (radius+1)],
+                range=[-(radius + 1), (radius + 1)],
             ),
             yaxis=dict(
                 domain=[0, 1],
-                range=[-(radius+1), (radius+1)]
+                range=[-(radius + 1), (radius + 1)]
             ),
             xaxis2=dict(
                 domain=[0.55, 1],
             ),
             yaxis2=dict(
                 domain=[0, 1],
-                anchor = 'x2'
+                anchor='x2'
             ),
             legend=dict(
                 x=0,
@@ -188,6 +231,7 @@ class HashCircle:
                 bgcolor='rgba(255, 255, 255, 0)',
                 bordercolor='rgba(255, 255, 255, 0)'
             ),
+            annotations=annotations,
             width=1900,
             height=800,
             shapes=[dict(

@@ -1,8 +1,8 @@
 from hashring import *
 
 if __name__ == '__main__':
-    keys = generate_random(50000, 1000000)
-    nodes = ['serv' + str(i) for i in range(20)]
+    keys = generate_random(100, 1000000)
+    nodes = ['s' + str(i) for i in range(10)]
 
     h = HashCircle(keys, [])
 
