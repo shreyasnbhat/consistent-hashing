@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Homepage</title>
+    <link href="{{url_for('static', filename='css/materialize.min.css')}}" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="{{url_for('static', filename='js/plotly-latest.min.js')}}"></script>
+    <link href="{{url_for('static', filename='css/style.css')}}" rel="stylesheet">
+
+</head>
+<nav>
+    <div class="nav-wrapper orange darken-3 title-style">
+         <a href="{{url_for('getHomePage')}}" class="brand-logo title-style">Consistent Hashing Visualizer</a>
+    </div>
+</nav>
+<div id="hashring"></div>
+<div class="row card-panel hoverable block-style">
+    <form class="col s6 center" action="{{url_for('addNode')}}" method="POST">
+        <button name="action" class="btn waves-effect waves-light orange darken-4">Add Node</button>
+    </form>
+     <form class="col s6 center" action="{{url_for('removeNode')}}" method="POST">
+        <button name="action" class="btn waves-effect waves-light orange darken-4">Remove Node</button>
+    </form>
+</div>
+<script>
+    var figure = JSON.parse({{figure | tojson}});
+    Plotly.newPlot('hashring', figure['data'], figure['layout']);
+</script>
+</body>
+</html>

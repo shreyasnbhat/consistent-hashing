@@ -60,7 +60,7 @@ class HashCircle:
             if not regenerated:
                 self.generate_map()
 
-    def remove_weighted_node(self,node, weight,regenerate=False):
+    def remove_weighted_node(self, node, weight, regenerate=False):
         w_nodes = [node + '-' + str(i) for i in range(weight)]
         for i in range(weight):
             self.remove_node(w_nodes[i], regenerate)
@@ -144,7 +144,7 @@ class HashCircle:
         for i in self.node_key_count.keys():
             print(i, self.node_key_count[i])
 
-    def plot_all(self, radius):
+    def plot_requirements(self, radius):
 
         x_key = []
         y_key = []
@@ -164,7 +164,26 @@ class HashCircle:
             y_node.append(b)
             hover_labels.append(self.item_position[i])
 
-        trace1 = go.Scattergl(
+        x_count = []
+        y_count = []
+        temp_sort = []
+
+        for i in self.node_key_count_grouped.keys():
+            temp_sort.append((i, self.node_key_count_grouped[i]))
+        temp_sort.sort(key=lambda x: int(x[0].split('-')[1]))
+
+        for i in temp_sort:
+            x_count.append(i[0])
+            y_count.append(i[1])
+
+        return x_key, y_key, x_node, y_node, hover_labels, x_count, y_count
+
+    def plot_all(self, radius):
+
+        x_key, y_key, x_node, y_node, hover_labels, x_count, y_count = self.plot_requirements(radius)
+
+        trace1 = dict(
+            type='scatter',
             x=x_key,
             y=y_key,
             xaxis='x',
@@ -178,7 +197,8 @@ class HashCircle:
             )
         )
 
-        trace2 = go.Scattergl(
+        trace2 = dict(
+            type='scatter',
             x=x_node,
             y=y_node,
             xaxis='x',
@@ -198,19 +218,8 @@ class HashCircle:
             )
         )
 
-        x_count = []
-        y_count = []
-        temp_sort = []
-
-        for i in self.node_key_count_grouped.keys():
-            temp_sort.append((i, self.node_key_count_grouped[i]))
-        temp_sort.sort(key=lambda x: int(x[0].split('-')[1]))
-
-        for i in temp_sort:
-            x_count.append(i[0])
-            y_count.append(i[1])
-
-        trace3 = go.Bar(
+        trace3 = dict(
+            type='bar',
             name='Key Distribution',
             x=x_count,
             y=y_count,
@@ -259,9 +268,11 @@ class HashCircle:
                 bgcolor='#FFA000',
                 opacity=0.8
             )
-            annotations.append(node_annotation)
 
-        layout = go.Layout(
+            if len(self.node_list)/self.node_weight < 8:
+                annotations.append(node_annotation)
+
+        layout = dict(
             title='Consistent Hashing Plots',
             paper_bgcolor='#263238',
             plot_bgcolor='#37474F',
@@ -311,5 +322,4 @@ class HashCircle:
             'layout': layout,
         }
 
-        plotly.offline.plot(fig, auto_open=True)
-        print("Done")
+        return fig
