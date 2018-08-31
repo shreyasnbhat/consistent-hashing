@@ -189,6 +189,11 @@ class HashCircle:
             xaxis='x',
             yaxis='y',
             name='Keys',
+            textfont=dict(
+                family='sans serif',
+                size=18,
+                color='#263238'
+            ),
             mode='markers',
             marker=dict(
                 color='#00897B',
@@ -207,7 +212,7 @@ class HashCircle:
             textfont=dict(
                 family='sans serif',
                 size=18,
-                color='#1f77b4'
+                color='#263238'
             ),
             mode='markers',
             name='Nodes',
@@ -224,6 +229,11 @@ class HashCircle:
             x=x_count,
             y=y_count,
             xaxis='x2',
+            textfont=dict(
+                family='sans serif',
+                size=18,
+                color='#263238'
+            ),
             yaxis='y2',
             marker=dict(
                 color='#EF5350'
@@ -260,7 +270,7 @@ class HashCircle:
                 font=dict(
                     family='Courier New, monospace',
                     size=16,
-                    color='#ffffff'
+                    color='#263238'
                 ),
                 bordercolor='#FF6F00',
                 borderwidth=2,
@@ -273,10 +283,9 @@ class HashCircle:
                 annotations.append(node_annotation)
 
         layout = dict(
-            title='Consistent Hashing Plots',
-            paper_bgcolor='#263238',
-            plot_bgcolor='#37474F',
-            font=dict(family='Courier New, monospace', size=18, color='#ffffff'),
+            paper_bgcolor='#ffffff',
+            plot_bgcolor='#ffffff',
+            font=dict(family='Courier New, monospace', size=18, color='#263238'),
             xaxis=dict(
                 domain=[0, 0.45],
                 range=[-(radius + 1), (radius + 1)],
@@ -301,8 +310,6 @@ class HashCircle:
                 bordercolor='rgba(255, 255, 255, 0)'
             ),
             annotations=annotations,
-            width=1900,
-            height=800,
             shapes=[dict(
                 type='circle',
                 xref='x',

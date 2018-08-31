@@ -11,17 +11,23 @@
 </head>
 <nav>
     <div class="nav-wrapper orange darken-3 title-style">
-         <a href="{{url_for('getHomePage')}}" class="brand-logo title-style">Consistent Hashing Visualizer</a>
+        <a href="{{url_for('getHomePage')}}" class="brand-logo title-style">Consistent Hashing Visualizer</a>
     </div>
 </nav>
-<div id="hashring"></div>
-<div class="row card-panel hoverable block-style">
-    <form class="col s6 center" action="{{url_for('addNode')}}" method="POST">
-        <button name="action" class="btn waves-effect waves-light orange darken-4">Add Node</button>
-    </form>
-     <form class="col s6 center" action="{{url_for('removeNode')}}" method="POST">
-        <button name="action" class="btn waves-effect waves-light orange darken-4">Remove Node</button>
-    </form>
+<div class="row block-style">
+    <div id="hashring" class="col s9" style="width:1500px;height:600px;margin-right: 30px;"></div>
+    <div class="col s2 title-style">
+        <div class="row block-style card-panel">
+            <h4 class="col s12 center block-style">Graph Operations</h4>
+            <h6 class="col s6">Node Operations</h6>
+            <form class="col s3" action="{{url_for('addNode')}}" method="POST">
+                <button name="action" class="btn waves-effect waves-light orange darken-4"> + </button>
+            </form>
+            <form class="col s3" action="{{url_for('removeNode')}}" method="POST">
+                <button name="action" class="btn waves-effect waves-light orange darken-4">  -  </button>
+            </form>
+        </div>
+    </div>
 </div>
 <script>
     var figure = JSON.parse({{figure | tojson}});

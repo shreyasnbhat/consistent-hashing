@@ -12,6 +12,7 @@ def getHomePage():
 
         return render_template('homepage.html', figure=json.dumps(figure))
 
+
 @app.route('/addNode', methods=['POST'])
 def addNode():
     session['count'] += 1
@@ -20,6 +21,7 @@ def addNode():
     figure = hc.plot_all(PLOT_RADIUS)
     print("Added", new_node_name)
     return render_template('homepage.html', figure=json.dumps(figure))
+
 
 @app.route('/removeNode', methods=['POST'])
 def removeNode():
