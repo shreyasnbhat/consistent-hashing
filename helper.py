@@ -24,3 +24,9 @@ def get_annotation_position(hash,radius,flag):
         return (radius + 1) * math.cos(radians) , (radius + 1) * math.sin(radians)
     else:
         return (radius - 1) * math.cos(radians) , (radius - 1) * math.sin(radians)
+
+
+def slice(tuples):
+    x = [tuples[i][0] for i in range(len(tuples))]
+    y = [tuples[i][1] for i in range(len(tuples))]
+    return x,y

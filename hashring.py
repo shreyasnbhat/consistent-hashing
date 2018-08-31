@@ -2,9 +2,21 @@ import hashlib
 from collections import defaultdict
 from bisect import insort
 import numpy as np
-import plotly.graph_objs as go
-import plotly
 from helper import *
+
+
+class History:
+    nodes = 0
+    keys = 0
+    remapped = 0
+
+    def __init__(self, nodes, keys, remapped):
+        self.nodes = nodes
+        self.keys = keys
+        self.remapped = remapped
+
+    def get_data(self):
+        return self.keys/self.nodes , self.remapped
 
 
 class HashCircle:
@@ -19,6 +31,8 @@ class HashCircle:
     node_key_count_grouped = None
     node_weight = 1
     node_prefix_length = 1
+    remap_history = []
+    api_access = False
 
     def __init__(self, keys, nodes, node_prefix_length, node_weight):
         self.item_position = defaultdict(int)
@@ -29,6 +43,7 @@ class HashCircle:
         self.init_nodes(nodes)
         self.init_keys(keys)
         self.node_weight = node_weight
+        self.keys = keys
 
     def init_nodes(self, nodes):
         for i in nodes:
@@ -41,6 +56,14 @@ class HashCircle:
             insort(self.key_list, key_hash)
             insort(self.item_list, key_hash)
 
+    def add_history(self, w_nodes):
+        remapped_keys = 0
+        for i in w_nodes:
+            remapped_keys += self.node_key_count[i]
+        number_of_nodes = len(self.nodes) / self.node_weight
+        hist = History(number_of_nodes, len(self.keys), remapped_keys)
+        self.remap_history.append(hist.get_data())
+
     def add_weighted_node(self, node, weight, regenerate=False):
         w_nodes = [node + '-' + str(i) for i in range(weight)]
         for i in range(weight):
@@ -48,6 +71,9 @@ class HashCircle:
 
         if regenerate:
             self.generate_map()
+
+        if self.api_access:
+            self.add_history(w_nodes)
 
     def add_node(self, node, regenerated):
         if node not in self.nodes:
@@ -62,11 +88,16 @@ class HashCircle:
 
     def remove_weighted_node(self, node, weight, regenerate=False):
         w_nodes = [node + '-' + str(i) for i in range(weight)]
+
+        if self.api_access:
+            self.add_history(w_nodes)
+
         for i in range(weight):
             self.remove_node(w_nodes[i], regenerate)
 
         if regenerate:
             self.generate_map()
+
 
     def remove_node(self, node, regenerated):
         if node in self.nodes:
@@ -279,7 +310,7 @@ class HashCircle:
                 opacity=0.8
             )
 
-            if len(self.node_list)/self.node_weight < 8:
+            if len(self.node_list) / self.node_weight < 8:
                 annotations.append(node_annotation)
 
         layout = dict(

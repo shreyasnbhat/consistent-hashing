@@ -7,31 +7,79 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <script src="{{url_for('static', filename='js/plotly-latest.min.js')}}"></script>
     <link href="{{url_for('static', filename='css/style.css')}}" rel="stylesheet">
-
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
 </head>
+<body>
 <nav>
     <div class="nav-wrapper orange darken-3 title-style">
         <a href="{{url_for('getHomePage')}}" class="brand-logo title-style">Consistent Hashing Visualizer</a>
     </div>
 </nav>
+<div class="block-style row">
+    <h4 style="font-family: 'Open Sans'">Data Overview</h4>
+</div>
 <div class="row block-style">
     <div id="hashring" class="col s9" style="width:1500px;height:600px;margin-right: 30px;"></div>
     <div class="col s2 title-style">
         <div class="row block-style card-panel">
-            <h4 class="col s12 center block-style">Graph Operations</h4>
-            <h6 class="col s6">Node Operations</h6>
+            <h4 class="col s12 center block-style" style="font-family: 'Open Sans'">OPERATIONS</h4>
+            <h6 class="col s6" style="font-family: 'Open Sans'">Node Operations</h6>
             <form class="col s3" action="{{url_for('addNode')}}" method="POST">
                 <button name="action" class="btn waves-effect waves-light orange darken-4"> + </button>
             </form>
             <form class="col s3" action="{{url_for('removeNode')}}" method="POST">
                 <button name="action" class="btn waves-effect waves-light orange darken-4">  -  </button>
             </form>
+            <br>
+            <h5 class="col s12">{{x_history|length}} operations performed</h5>
         </div>
     </div>
+</div>
+<div class="row block-style">
+ <h4 style="font-family: 'Open Sans'">Remap History</h4>
+</div>
+<div class="row">
+</div>
+    <div id="remap" class="col s12">
 </div>
 <script>
     var figure = JSON.parse({{figure | tojson}});
     Plotly.newPlot('hashring', figure['data'], figure['layout']);
+</script>
+<script>
+    var x = {{x_history}};
+    var y = {{y_history}};
+
+    var event_no = [];
+
+    for( var i = 0; i < {{x_history|length}}; i++) {
+        event_no[i] = i+1;
+    }
+
+    var trace1 = {
+      name : 'Average Remap Metric',
+      x: event_no,
+      y: x,
+      type: 'scatter'
+    };
+
+    var trace2 = {
+      name: "Remap Count",
+      x: event_no,
+      y: y,
+      type: 'scatter'
+    };
+
+    var layout = {
+        xaxis: {
+            title: "Event Number"
+        }
+    };
+
+    var data = [trace1, trace2];
+
+    console.log(x);
+    Plotly.newPlot('remap', data, layout);
 </script>
 </body>
 </html>

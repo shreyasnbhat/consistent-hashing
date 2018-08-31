@@ -16,6 +16,7 @@ NODE_PREFIX = ''.join(random.choice(string.ascii_uppercase + string.digits) for 
 NODES = [NODE_PREFIX + '-' + str(i) for i in range(DEFAULT_NODE_COUNT)]
 KEYS = generate_random(DEFAULT_KEY_COUNT, 100000)
 hc = HashCircle(KEYS, [], NODE_PREFIX_LENGTH, DEFAULT_NODE_WEIGHT)
+hc.api_access = True
 
 for i in NODES:
     hc.add_weighted_node(i, DEFAULT_NODE_WEIGHT, True)

@@ -8,9 +8,8 @@ def getHomePage():
     if request.method == 'GET':
         figure = hc.plot_all(PLOT_RADIUS)
         session['count'] = DEFAULT_NODE_COUNT
-        print(json.dumps(figure))
-
-        return render_template('homepage.html', figure=json.dumps(figure))
+        x_history, y_history = slice(hc.remap_history)
+        return render_template('homepage.html', figure=json.dumps(figure), x_history=x_history, y_history=y_history)
 
 
 @app.route('/addNode', methods=['POST'])
@@ -20,7 +19,8 @@ def addNode():
     hc.add_weighted_node(new_node_name, DEFAULT_NODE_WEIGHT, True)
     figure = hc.plot_all(PLOT_RADIUS)
     print("Added", new_node_name)
-    return render_template('homepage.html', figure=json.dumps(figure))
+    x_history, y_history = slice(hc.remap_history)
+    return render_template('homepage.html', figure=json.dumps(figure), x_history=x_history, y_history=y_history)
 
 
 @app.route('/removeNode', methods=['POST'])
@@ -30,4 +30,5 @@ def removeNode():
     hc.remove_weighted_node(new_node_name, DEFAULT_NODE_WEIGHT, True)
     figure = hc.plot_all(PLOT_RADIUS)
     print("Removed", new_node_name)
-    return render_template('homepage.html', figure=json.dumps(figure))
+    x_history, y_history = slice(hc.remap_history)
+    return render_template('homepage.html', figure=json.dumps(figure), x_history=x_history, y_history=y_history)
